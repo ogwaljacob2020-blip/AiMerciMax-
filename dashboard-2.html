@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMerci Max Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .cards { display: grid; gap: 15px; padding: 15px; max-width: 700px; margin: 0 auto; }
+    </style>
+</head>
+<body class="requires-auth">
+
+<div class="app-header">
+    <div>
+        <div class="app-title">AiMerci Max</div>
+        <div class="app-subtitle" id="greeting">Loading...</div>
+    </div>
+</div>
+
+<div class="cards">
+
+    <div class="card">
+        📘 Scheme of Work Generator
+        <br>
+        <button onclick="location.href='scheme.html'">Open</button>
+    </div>
+
+    <div class="card">
+        📝 Lesson Plan Creator
+        <br>
+        <button onclick="location.href='lessonplan.html'">Open</button>
+    </div>
+
+    <div class="card">
+        📚 Notes Generator
+        <br>
+        <button onclick="location.href='notes.html'">Open</button>
+    </div>
+
+    <div class="card">
+        📋 Assessment Generator
+        <br>
+        <button onclick="location.href='assessment.html'">Open</button>
+    </div>
+
+    <button class="btn-danger" onclick="logout()">Log Out</button>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

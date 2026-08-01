@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMerci Max - Assessment Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        th:nth-child(1) { width: 8%; }
+        th:nth-child(3) { width: 10%; }
+    </style>
+</head>
+<body class="requires-auth">
+
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Assessment / Exam</div>
+        <div class="app-subtitle">AiMerci Max Studio</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="save-status" id="assessmentSaveStatus">No draft saved yet</div>
+
+    <h3>1. Context</h3>
+    <div class="meta-grid">
+        <div>
+            <label>Institution Name</label>
+            <input id="assessSchool" type="text" placeholder="Enter school name" oninput="saveAssessmentDraft()">
+        </div>
+        <div>
+            <label>Instructor Name</label>
+            <input id="assessTeacher" type="text" placeholder="Enter teacher name" oninput="saveAssessmentDraft()">
+        </div>
+        <div>
+            <label>Subject</label>
+            <input id="assessSubject" type="text" placeholder="e.g., Chemistry, English" oninput="saveAssessmentDraft()">
+        </div>
+        <div>
+            <label>Class Level</label>
+            <select id="assessClass" onchange="saveAssessmentDraft()">
+                <option value="">Select Level</option>
+                <option value="S.1">Senior 1 (S.1)</option>
+                <option value="S.2">Senior 2 (S.2)</option>
+                <option value="S.3">Senior 3 (S.3)</option>
+                <option value="S.4">Senior 4 (S.4)</option>
+                <option value="S.5">Senior 5 (S.5)</option>
+                <option value="S.6">Senior 6 (S.6)</option>
+            </select>
+        </div>
+        <div>
+            <label>Duration</label>
+            <input id="assessDuration" type="text" placeholder="e.g., 1 Hour 30 Minutes" oninput="saveAssessmentDraft()">
+        </div>
+        <div>
+            <label>Total Marks</label>
+            <input id="assessMarks" type="number" placeholder="e.g., 100" oninput="saveAssessmentDraft()">
+        </div>
+    </div>
+
+    <div style="margin-bottom:15px;">
+        <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:6px;">Topic(s) Covered</label>
+        <input id="assessTopic" type="text" placeholder="e.g., Cell Structure and Function" oninput="saveAssessmentDraft()">
+    </div>
+
+    <button class="btn-generate no-print" onclick="generateAssessmentAI()">✨ Generate Assessment with AiMerci</button>
+
+    <h3>2. Questions</h3>
+    <table id="assessmentTable">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Question</th>
+                <th>Marks</th>
+            </tr>
+        </thead>
+        <tbody id="assessmentBody">
+            <tr>
+                <td><textarea oninput="autoExpand(this); saveAssessmentDraft();"></textarea></td>
+                <td><textarea oninput="autoExpand(this); saveAssessmentDraft();"></textarea></td>
+                <td><textarea oninput="autoExpand(this); saveAssessmentDraft();"></textarea></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button class="no-print" onclick="addQuestionRow()">+ Add Question</button>
+
+    <div class="button-group no-print">
+        <button class="btn-secondary" onclick="downloadAssessmentCSV()">⬇️ CSV</button>
+        <button class="btn-warning" onclick="downloadPDF('Assessment.pdf')">📄 PDF</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+        <button class="btn-danger" onclick="clearAssessment()">🗑️ Clear</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

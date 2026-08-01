@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMerci Max - Lesson Plan Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="requires-auth">
+
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Lesson Plan</div>
+        <div class="app-subtitle">AiMerci Max Studio</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="save-status" id="saveStatus">No draft saved yet</div>
+
+    <h3>1. Context & Tracking Properties</h3>
+    <div class="meta-grid">
+        <div>
+            <label>Institution Name</label>
+            <input id="school" type="text" placeholder="Enter school name" oninput="saveDraft()">
+        </div>
+        <div>
+            <label>Instructor Name</label>
+            <input id="teacher" type="text" placeholder="Enter teacher name" oninput="saveDraft()">
+        </div>
+        <div>
+            <label>Target Subject Domain</label>
+            <input id="subject" type="text" placeholder="e.g., Mathematics, ICT" oninput="saveDraft()">
+        </div>
+        <div>
+            <label>Class Level Selection</label>
+            <select id="class" onchange="saveDraft()">
+                <option value="">Select Level</option>
+                <option value="S.1">Senior 1 (S.1)</option>
+                <option value="S.2">Senior 2 (S.2)</option>
+                <option value="S.3">Senior 3 (S.3)</option>
+                <option value="S.4">Senior 4 (S.4)</option>
+                <option value="S.5">Senior 5 (S.5)</option>
+                <option value="S.6">Senior 6 (S.6)</option>
+            </select>
+        </div>
+    </div>
+
+    <h3>2. Curricular Bounds & Targets</h3>
+    <div style="margin-bottom: 20px;">
+        <label>Lesson Topic / Focus Sub-Topic</label>
+        <input id="lessonTopic" type="text" placeholder="Specify core theme focus" oninput="saveDraft()">
+
+        <label>Core Lesson Competency</label>
+        <textarea id="lessonCompetency" placeholder="Describe the overarching skills or concepts from the scheme of work" oninput="autoExpand(this); saveDraft();"></textarea>
+
+        <label>Expected Learning Outcomes</label>
+        <textarea id="lessonOutcomes" placeholder="What should the active learners achieve by the end of the lesson block?" oninput="autoExpand(this); saveDraft();"></textarea>
+
+        <label>Instructional Aids & Low-Cost Materials</label>
+        <input id="lessonResources" type="text" placeholder="Local materials, flip charts, print text references" oninput="saveDraft()">
+    </div>
+
+    <button class="btn-generate no-print" onclick="generateFullLessonAI()">✨ Generate Full Plan (AiMerci)</button>
+
+    <h3>3. Sequential Step Development Grid</h3>
+    <table id="lessonTable">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Stage / Pacing</th>
+                <th style="width: 42.5%;">Teacher Activity Protocol</th>
+                <th style="width: 42.5%;">Learner Activity Tasks</th>
+            </tr>
+        </thead>
+        <tbody id="lessonBody">
+            <tr>
+                <td><strong>Intro Hook</strong><br><small>(10 Mins)</small></td>
+                <td><textarea id="stepIntroTeacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="stepIntroLearner" oninput="autoExpand(this); saveDraft();"></textarea></td>
+            </tr>
+            <tr>
+                <td><strong>Step 1</strong><br><small>(20 Mins)</small></td>
+                <td><textarea id="step1Teacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="step1Learner" oninput="autoExpand(this); saveDraft();"></textarea></td>
+            </tr>
+            <tr>
+                <td><strong>Step 2 (Groups)</strong><br><small>(25 Mins)</small></td>
+                <td><textarea id="step2Teacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="step2Learner" oninput="autoExpand(this); saveDraft();"></textarea></td>
+            </tr>
+            <tr>
+                <td><strong>Step 3 Review</strong><br><small>(15 Mins)</small></td>
+                <td><textarea id="step3Teacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="step3Learner" oninput="autoExpand(this); saveDraft();"></textarea></td>
+            </tr>
+            <tr>
+                <td><strong>Conclusion</strong><br><small>(10 Mins)</small></td>
+                <td><textarea id="stepConcTeacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="stepConcLearner" oninput="autoExpand(this); saveDraft();"></textarea></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="button-group no-print">
+        <button class="btn-warning" onclick="downloadPDF('Lesson_Plan.pdf')">📄 PDF</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+        <button class="btn-danger" onclick="clearLessonPlan()">🗑️ Clear</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

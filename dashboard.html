@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMerci Max Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f6ff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            background: #1565c0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 15px;
+        }
+
+        .container {
+            margin-top: 20px;
+            display: grid;
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .card button {
+            background: #1565c0;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .card button:disabled {
+            background: #b0bec5;
+            cursor: not-allowed;
+        }
+
+        .card small {
+            display: block;
+            margin-top: 6px;
+            color: #888;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>AiMerci Max</h1>
+    <p id="greeting">Teacher AI Assistant</p>
+</div>
+
+<div class="container">
+
+    <div class="card">
+        📘 Scheme of Work Generator
+        <br>
+        <button onclick="location.href='scheme.html'">Open</button>
+    </div>
+
+    <div class="card">
+        📝 Lesson Plan Creator
+        <br>
+        <button onclick="location.href='lessonplan.html'">Open</button>
+    </div>
+
+    <div class="card">
+        📚 Notes Generator
+        <br>
+        <button onclick="location.href='notes.html'">Open</button>
+    </div>
+
+    <div class="card">
+        📋 Assessment Generator
+        <br>
+        <button onclick="location.href='assessment.html'">Open</button>
+    </div>
+
+</div>
+
+<script>
+let account = JSON.parse(localStorage.getItem("aimerciAccount") || "null");
+if (account && account.name) {
+    document.getElementById("greeting").textContent = "Welcome back, " + account.name;
+}
+</script>
+
+</body>
+</html>

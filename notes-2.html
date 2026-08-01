@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMerci Max - Lesson Notes Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .note-block { margin-bottom: 18px; }
+        .note-block label { display: block; font-weight: bold; margin-bottom: 6px; color: var(--primary); }
+        .note-block textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+<body class="requires-auth">
+
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Lesson Notes</div>
+        <div class="app-subtitle">AiMerci Max Studio</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="save-status" id="notesSaveStatus">No draft saved yet</div>
+
+    <h3>1. Context</h3>
+    <div class="meta-grid">
+        <div>
+            <label>Institution Name</label>
+            <input id="notesSchool" type="text" placeholder="Enter school name" oninput="saveNotesDraft()">
+        </div>
+        <div>
+            <label>Instructor Name</label>
+            <input id="notesTeacher" type="text" placeholder="Enter teacher name" oninput="saveNotesDraft()">
+        </div>
+        <div>
+            <label>Subject</label>
+            <input id="notesSubject" type="text" placeholder="e.g., Biology, History" oninput="saveNotesDraft()">
+        </div>
+        <div>
+            <label>Class Level</label>
+            <select id="notesClass" onchange="saveNotesDraft()">
+                <option value="">Select Level</option>
+                <option value="S.1">Senior 1 (S.1)</option>
+                <option value="S.2">Senior 2 (S.2)</option>
+                <option value="S.3">Senior 3 (S.3)</option>
+                <option value="S.4">Senior 4 (S.4)</option>
+                <option value="S.5">Senior 5 (S.5)</option>
+                <option value="S.6">Senior 6 (S.6)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="note-block">
+        <label>Topic</label>
+        <input id="notesTopic" type="text" placeholder="e.g., The Water Cycle" oninput="saveNotesDraft()">
+    </div>
+
+    <button class="btn-generate no-print" onclick="generateNotesAI()">✨ Generate Notes with AiMerci</button>
+
+    <br><br>
+
+    <div class="note-block">
+        <label>Introduction</label>
+        <textarea id="notesIntro" oninput="autoExpand(this); saveNotesDraft();" placeholder="Briefly introduce the topic and why it matters"></textarea>
+    </div>
+
+    <div class="note-block">
+        <label>Key Definitions / Concepts</label>
+        <textarea id="notesDefinitions" oninput="autoExpand(this); saveNotesDraft();" placeholder="List and define the key terms"></textarea>
+    </div>
+
+    <div class="note-block">
+        <label>Main Content / Explanation</label>
+        <textarea id="notesContent" oninput="autoExpand(this); saveNotesDraft();" placeholder="Detailed explanation of the topic"></textarea>
+    </div>
+
+    <div class="note-block">
+        <label>Examples / Illustrations</label>
+        <textarea id="notesExamples" oninput="autoExpand(this); saveNotesDraft();" placeholder="Worked examples, diagrams to draw, real-life illustrations"></textarea>
+    </div>
+
+    <div class="note-block">
+        <label>Summary</label>
+        <textarea id="notesSummary" oninput="autoExpand(this); saveNotesDraft();" placeholder="Key takeaways in a few sentences"></textarea>
+    </div>
+
+    <div class="note-block">
+        <label>Assignment / Homework</label>
+        <textarea id="notesAssignment" oninput="autoExpand(this); saveNotesDraft();" placeholder="Questions or tasks for learners to complete"></textarea>
+    </div>
+
+    <div class="button-group no-print">
+        <button class="btn-warning" onclick="downloadPDF('Lesson_Notes.pdf')">📄 PDF</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+        <button class="btn-danger" onclick="clearNotes()">🗑️ Clear</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
