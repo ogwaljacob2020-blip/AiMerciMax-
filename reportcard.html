@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiMerci Max - Report Cards</title>
+<link rel="stylesheet" href="style.css">
+<style>
+    .report-card {
+        border: 2px solid var(--primary); border-radius: 10px; padding: 16px;
+        margin-bottom: 20px; page-break-after: always;
+    }
+    .report-card h3 { margin: 0 0 4px; color: var(--primary-dark); }
+    .report-card .sub { font-size: 12px; color: var(--neutral); margin-bottom: 10px; }
+    .report-card table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .report-card th, .report-card td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+    .report-card th { background: #f0f4ff; }
+    .summary-row td { font-weight: bold; background: #fafafa; }
+    .grade-A { color: #2e7d32; } .grade-B { color: #1565c0; }
+    .grade-C { color: #ef6c00; } .grade-D, .grade-E, .grade-F { color: #c62828; }
+    .remark-line { margin-top: 10px; font-size: 13px; }
+    .remark-line .fill { border-bottom: 1px solid #999; display: inline-block; min-width: 200px; }
+</style>
+</head>
+<body class="requires-auth">
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Report Cards</div>
+        <div class="app-subtitle">AiMerci Max</div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="no-print">
+        <label>Select Class</label>
+        <select id="classSelect" onchange="onClassChange()">
+            <option value="">Loading classes...</option>
+        </select>
+        <div id="noClassMsg" style="display:none; color:var(--neutral); font-size:13px; margin-top:10px;">
+            No classes saved yet. <a href="classes.html">Add a class and students first</a>.
+        </div>
+        <input id="schoolName" placeholder="School / Institution Name" style="margin-top:12px;">
+
+        <div class="button-group" style="margin-top:15px;">
+            <button class="btn-generate" onclick="renderReportCards()">📋 Generate Report Cards</button>
+            <button onclick="downloadPDF('AiMerci Max - Report Cards.pdf')">📄 Download All as PDF</button>
+        </div>
+        <p style="font-size:12px; color:var(--neutral); margin-top:8px;">
+            Grades shown use a general percentage scale (A: 80%+, B: 70-79%, C: 60-69%, D: 50-59%, E: 40-49%, F: below 40%) — adjust your interpretation to match your school's own grading policy.
+        </p>
+    </div>
+
+    <div id="cardsWrap"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+<script>
+let classesCache = {};
+let currentClass = null;
+
+async function loadClasses() {
+    let user = auth.currentUser;
+    if (!user) return;
+    let select = document.getElementById("classSelect");
+
+    try {
+        let snap = await db.collection("classes").where("uid", "==", user.uid).get();
+        if (snap.empty) {
+            document.getElementById("noClassMsg").style.display = "block";
+            select.innerHTML = `<option value="">No classes yet</option>`;
+            return;
+        }
+        select.innerHTML = `<option value="">Select a class</option>`;
+        snap.forEach(doc => {
+            classesCache[doc.id] = doc.data();
+            let opt = document.createElement("option");
+            opt.value = doc.id;
+            opt.textContent = doc.data().className || "(unnamed)";
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        select.innerHTML = `<option value="">Couldn't load classes</option>`;
+    }
+}
+
+function onClassChange() {
+    let id = document.getElementById("classSelect").value;
+    currentClass = id ? { id, ...classesCache[id] } : null;
+    document.getElementById("cardsWrap").innerHTML = "";
+}
+
+function gradeFor(pct) {
+    if (pct >= 80) return "A";
+    if (pct >= 70) return "B";
+    if (pct >= 60) return "C";
+    if (pct >= 50) return "D";
+    if (pct >= 40) return "E";
+    return "F";
+}
+
+async function renderReportCards() {
+    if (!currentClass) { alert("Select a class first"); return; }
+    let user = auth.currentUser;
+    let wrap = document.getElementById("cardsWrap");
+    wrap.innerHTML = "<p style='color:var(--neutral); font-size:13px;'>Loading marks...</p>";
+
+    try {
+        let snap = await db.collection("marks")
+            .where("uid", "==", user.uid)
+            .where("classId", "==", currentClass.id)
+            .get();
+
+        let assessments = [];
+        snap.forEach(doc => assessments.push(doc.data()));
+
+        if (assessments.length === 0) {
+            wrap.innerHTML = `<p style="color:var(--neutral); font-size:13px;">No marks recorded for this class yet. <a href="marks.html">Enter marks first</a>.</p>`;
+            return;
+        }
+
+        let school = document.getElementById("schoolName").value.trim() || "School Name";
+        let students = currentClass.students || [];
+
+        // Compute totals/averages per student for ranking.
+        let studentStats = students.map(s => {
+            let total = 0, maxTotal = 0, count = 0;
+            assessments.forEach(a => {
+                if (a.scores && a.scores[s.id] !== undefined) {
+                    total += a.scores[s.id];
+                    maxTotal += a.maxScore || 100;
+                    count++;
+                }
+            });
+            let pct = maxTotal > 0 ? (total / maxTotal) * 100 : null;
+            return { student: s, total, maxTotal, pct, count };
+        });
+
+        // Rank by percentage, only among students with at least one score.
+        let ranked = studentStats.filter(s => s.pct !== null).sort((a, b) => b.pct - a.pct);
+        ranked.forEach((s, i) => { s.position = i + 1; });
+        let totalRanked = ranked.length;
+
+        wrap.innerHTML = "";
+        studentStats.forEach(stat => {
+            let s = stat.student;
+            let rows = assessments.map(a => {
+                let score = a.scores && a.scores[s.id] !== undefined ? a.scores[s.id] : "-";
+                return `<tr><td>${a.assessmentName}</td><td>${score}</td><td>${a.maxScore || 100}</td></tr>`;
+            }).join("");
+
+            let pctText = stat.pct !== null ? stat.pct.toFixed(1) + "%" : "—";
+            let grade = stat.pct !== null ? gradeFor(stat.pct) : "—";
+            let posText = stat.position ? `${stat.position} of ${totalRanked}` : "—";
+
+            let card = document.createElement("div");
+            card.className = "report-card";
+            card.innerHTML = `
+                <h3>${school}</h3>
+                <div class="sub">${currentClass.className || ""} · ${currentClass.subject || ""} · ${currentClass.term || ""} ${currentClass.year || ""}</div>
+                <p><strong>${s.name}</strong>${s.admNo ? " (Adm No: " + s.admNo + ")" : ""}</p>
+                <table>
+                    <tr><th>Assessment</th><th>Score</th><th>Out of</th></tr>
+                    ${rows}
+                    <tr class="summary-row">
+                        <td>Total</td><td>${stat.total}</td><td>${stat.maxTotal}</td>
+                    </tr>
+                    <tr class="summary-row">
+                        <td>Average</td><td colspan="2">${pctText} — Grade <span class="grade-${grade}">${grade}</span></td>
+                    </tr>
+                    <tr class="summary-row">
+                        <td>Class Position</td><td colspan="2">${posText}</td>
+                    </tr>
+                </table>
+                <div class="remark-line">Teacher's Remark: <span class="fill">&nbsp;</span></div>
+                <div class="remark-line">Signature: <span class="fill">&nbsp;</span> &nbsp;&nbsp; Date: <span class="fill" style="min-width:100px;">&nbsp;</span></div>
+            `;
+            wrap.appendChild(card);
+        });
+    } catch (e) {
+        wrap.innerHTML = `<p style="color:var(--neutral); font-size:13px;">Couldn't load marks (${e.code || e.message}).</p>`;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) loadClasses();
+    });
+});
+</script>
+</body>
+</html>

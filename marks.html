@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiMerci Max - Enter Marks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+    .mark-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+    .mark-row .name { flex: 1; font-size: 14px; }
+    .mark-row input { width: 70px; text-align: center; margin: 0; }
+    .assess-pill {
+        display: inline-block; background: #e3f2fd; color: var(--primary-dark);
+        padding: 6px 12px; border-radius: 16px; font-size: 12px; margin: 3px 4px 3px 0; cursor: pointer;
+    }
+    .assess-pill.active { background: var(--accent); color: white; }
+</style>
+</head>
+<body class="requires-auth">
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Enter Marks</div>
+        <div class="app-subtitle">AiMerci Max</div>
+    </div>
+</div>
+
+<div class="container">
+    <label>Select Class</label>
+    <select id="classSelect" onchange="onClassChange()">
+        <option value="">Loading classes...</option>
+    </select>
+
+    <div id="noClassMsg" style="display:none; color:var(--neutral); font-size:13px; margin-top:10px;">
+        No classes saved yet. <a href="classes.html">Add a class and students first</a>.
+    </div>
+
+    <div id="marksSection" style="display:none; margin-top:15px;">
+        <h3>Assessments for this class</h3>
+        <div id="assessPills"></div>
+
+        <div class="meta-grid" style="margin-top:12px;">
+            <div><label>Assessment Name</label><input id="assessName" placeholder="e.g. BOT Exam"></div>
+            <div><label>Max Score</label><input id="maxScore" type="number" value="100"></div>
+        </div>
+
+        <h3 style="margin-top:15px;">Scores</h3>
+        <div id="marksRows"></div>
+
+        <button class="btn-generate" onclick="saveMarks()" style="margin-top:15px;">💾 Save Marks</button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+<script>
+let classesCache = {};
+let currentClass = null;
+let currentAssessmentId = null; // null = new assessment
+let assessmentsCache = [];
+
+async function loadClasses() {
+    let user = auth.currentUser;
+    if (!user) return;
+    let select = document.getElementById("classSelect");
+
+    try {
+        let snap = await db.collection("classes").where("uid", "==", user.uid).get();
+        if (snap.empty) {
+            document.getElementById("noClassMsg").style.display = "block";
+            select.innerHTML = `<option value="">No classes yet</option>`;
+            return;
+        }
+        select.innerHTML = `<option value="">Select a class</option>`;
+        snap.forEach(doc => {
+            classesCache[doc.id] = doc.data();
+            let opt = document.createElement("option");
+            opt.value = doc.id;
+            opt.textContent = doc.data().className || "(unnamed)";
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        select.innerHTML = `<option value="">Couldn't load classes</option>`;
+    }
+}
+
+function onClassChange() {
+    let id = document.getElementById("classSelect").value;
+    if (!id) { document.getElementById("marksSection").style.display = "none"; return; }
+    currentClass = classesCache[id];
+    currentClass.id = id;
+    document.getElementById("marksSection").style.display = "block";
+    renderMarksRows({});
+    loadAssessments();
+}
+
+function renderMarksRows(scores) {
+    let wrap = document.getElementById("marksRows");
+    wrap.innerHTML = "";
+    (currentClass.students || []).forEach(s => {
+        let row = document.createElement("div");
+        row.className = "mark-row";
+        row.innerHTML = `<span class="name">${s.name}</span>
+            <input type="number" class="score-input" data-sid="${s.id}" value="${scores[s.id] ?? ""}" min="0">`;
+        wrap.appendChild(row);
+    });
+}
+
+async function loadAssessments() {
+    let user = auth.currentUser;
+    let pills = document.getElementById("assessPills");
+    pills.innerHTML = "Loading...";
+
+    try {
+        let snap = await db.collection("marks")
+            .where("uid", "==", user.uid)
+            .where("classId", "==", currentClass.id)
+            .get();
+
+        assessmentsCache = [];
+        snap.forEach(doc => assessmentsCache.push({ id: doc.id, ...doc.data() }));
+
+        if (assessmentsCache.length === 0) {
+            pills.innerHTML = `<span style="color:var(--neutral); font-size:13px;">No assessments yet — create one below.</span>`;
+        } else {
+            pills.innerHTML = "";
+            assessmentsCache.forEach(a => {
+                let pill = document.createElement("span");
+                pill.className = "assess-pill";
+                pill.textContent = a.assessmentName;
+                pill.onclick = () => loadAssessmentIntoForm(a);
+                pills.appendChild(pill);
+            });
+        }
+        startNewAssessment();
+    } catch (e) {
+        pills.innerHTML = `<span style="color:var(--neutral); font-size:13px;">Couldn't load assessments (${e.code || e.message}).</span>`;
+    }
+}
+
+function startNewAssessment() {
+    currentAssessmentId = null;
+    document.getElementById("assessName").value = "";
+    document.getElementById("maxScore").value = 100;
+    renderMarksRows({});
+    document.querySelectorAll(".assess-pill").forEach(p => p.classList.remove("active"));
+}
+
+function loadAssessmentIntoForm(a) {
+    currentAssessmentId = a.id;
+    document.getElementById("assessName").value = a.assessmentName;
+    document.getElementById("maxScore").value = a.maxScore || 100;
+    renderMarksRows(a.scores || {});
+    document.querySelectorAll(".assess-pill").forEach(p => p.classList.toggle("active", p.textContent === a.assessmentName));
+}
+
+async function saveMarks() {
+    let user = auth.currentUser;
+    let assessmentName = document.getElementById("assessName").value.trim();
+    let maxScore = Number(document.getElementById("maxScore").value) || 100;
+
+    if (!assessmentName) { alert("Enter an assessment name (e.g. BOT Exam)"); return; }
+
+    let scores = {};
+    document.querySelectorAll(".score-input").forEach(inp => {
+        if (inp.value !== "") scores[inp.dataset.sid] = Number(inp.value);
+    });
+
+    let payload = {
+        uid: user.uid,
+        classId: currentClass.id,
+        assessmentName,
+        maxScore,
+        scores,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        if (currentAssessmentId) {
+            await db.collection("marks").doc(currentAssessmentId).update(payload);
+        } else {
+            await db.collection("marks").add(payload);
+        }
+        alert("✅ Marks saved!");
+        loadAssessments();
+    } catch (e) {
+        alert("Couldn't save marks (error: " + (e.code || e.message) + ")");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) loadClasses();
+    });
+});
+</script>
+</body>
+</html>

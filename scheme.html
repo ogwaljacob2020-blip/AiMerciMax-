@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiMerci Max - Scheme of Work</title>
+<link rel="stylesheet" href="style.css">
+<style>
+    th:nth-child(1), th:nth-child(2), th:nth-child(8) { width: 6%; }
+    th:nth-child(3), th:nth-child(4) { width: 14%; }
+    th:nth-child(5) { width: 22%; }
+    th:nth-child(6), th:nth-child(7), th:nth-child(9) { width: 11%; }
+</style>
+</head>
+<body class="requires-auth">
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Scheme of Work</div>
+        <div class="app-subtitle">AiMerci Max Generator</div>
+    </div>
+</div>
+<div class="container">
+<h3>Teacher & School Information</h3>
+<input id="school" placeholder="School Name">
+<input id="teacher" placeholder="Teacher Name">
+<input id="subject" placeholder="Subject">
+<select id="class">
+    <option>Select Class</option>
+    <option>S.1</option><option>S.2</option><option>S.3</option>
+    <option>S.4</option><option>S.5</option><option>S.6</option>
+</select>
+<select id="term">
+    <option>Select Term</option>
+    <option>Term I</option><option>Term II</option><option>Term III</option>
+</select>
+<input id="students" type="number" placeholder="Number of Students">
+<input id="weeks" type="number" placeholder="Number of Weeks">
+<input id="periods" type="number" placeholder="Periods per Week">
+
+<button class="btn-generate" onclick="generateSchemeAI()">✨ Generate Scheme with AiMerci</button>
+
+<h3>Scheme Details</h3>
+<table id="schemeTable">
+    <thead>
+        <tr>
+            <th>Week</th><th>Period</th><th>Theme / Topic</th><th>Competency</th>
+            <th>Learning Outcomes</th><th>T/L Resources</th><th>Methodology</th>
+            <th>Ref.</th><th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+        <tr>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+            <td><textarea oninput="autoExpand(this)"></textarea></td>
+        </tr>
+    </tbody>
+</table>
+
+<button class="no-print" onclick="addRow()">+ Add Another Row</button>
+
+<div class="button-group no-print">
+    <button class="btn-secondary" onclick="downloadCSV()">⬇️ CSV</button>
+    <button class="btn-warning" onclick="downloadPDF('Scheme_of_Work.pdf')">📄 PDF</button>
+    <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    <button class="btn-danger" onclick="clearScheme()">🗑️ Clear</button>
+</div>
+<div class="button-group no-print">
+    <button onclick="saveSchemeCloud()">💾 Save Scheme</button>
+    <button onclick="loadSchemeCloud()">📂 Open Saved Scheme</button>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+function addRow(){
+    let tbody = document.getElementById("tableBody");
+    let row = tbody.insertRow(-1);
+    for(let i = 0; i < 9; i++){
+        let cell = row.insertCell(i);
+        cell.innerHTML = '<textarea oninput="autoExpand(this)"></textarea>';
+    }
+}
+
+function generateAI(){
+    let subject = document.getElementById("subject").value.toLowerCase();
+    let className = document.getElementById("class").value;
+    let weeks = Number(document.getElementById("weeks").value);
+    let periods = Number(document.getElementById("periods").value);
+    if(subject === "" || weeks === 0){ alert("Enter Subject and Number of Weeks first"); return; }
+    let topics = [];
+    if(subject.includes("physics") && className === "S.1"){
+        topics = ["Introduction to Physics","Measurements","Physical Quantities","Force","Pressure","Density","Work","Energy","Power","Revision and Assessment"];
+    } else if(subject.includes("physics") && className === "S.2"){
+        topics = ["Heat","Temperature","Expansion","States of Matter","Motion","Speed and Velocity","Acceleration","Graphs of Motion","Revision","Assessment"];
+    } else {
+        topics = ["Introduction","Basic concepts","Application of knowledge","Practical activities","Problem solving","Revision","Assessment"];
+    }
+    let tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    for(let i=1; i<=weeks; i++){
+        let row = tbody.insertRow();
+        let data=[i,"Period "+(((i-1)%periods)+1),topics[i-1]||"Revision","Ability to apply knowledge and skills","Learner explains and applies concepts","Textbooks, charts, experiments","Discussion, demonstration, group work","Teacher's notes","Assessment"];
+        data.forEach(function(item){
+            let cell=row.insertCell();
+            let area=document.createElement("textarea");
+            area.value=item;
+            area.oninput=function(){ autoExpand(this); };
+            cell.appendChild(area);
+        });
+    }
+    alert("AiMerci Max has generated your scheme successfully!");
+}
+
+function clearScheme() {
+    if (confirm("Are you sure you want to clear the entire scheme of work?")) {
+        ["school","teacher","subject","students","weeks","periods"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("class").selectedIndex = 0;
+        document.getElementById("term").selectedIndex = 0;
+        let tbody = document.getElementById("tableBody");
+        tbody.innerHTML = `<tr>${Array(9).fill('<td><textarea oninput="autoExpand(this)"></textarea></td>').join('')}</tr>`;
+    }
+}
+
+function downloadCSV() {
+    let table = document.getElementById("schemeTable");
+    let csv = [];
+    csv.push(`School Name:,${document.getElementById("school").value||"N/A"}`);
+    csv.push(`Teacher Name:,${document.getElementById("teacher").value||"N/A"}`);
+    csv.push(`Subject:,${document.getElementById("subject").value||"N/A"}`);
+    csv.push(`Class:,${document.getElementById("class").value}`);
+    csv.push(`Term:,${document.getElementById("term").value}`);
+    csv.push(`Students:,${document.getElementById("students").value||"N/A"}`);
+    csv.push("");
+    for (let i = 0; i < table.rows.length; i++) {
+        let row = table.rows[i];
+        let rowData = [];
+        for (let j = 0; j < row.cells.length; j++) {
+            if (i === 0) { rowData.push(`"${row.cells[j].innerText}"`); }
+            else { let t = row.cells[j].querySelector('textarea'); rowData.push(`"${(t?t.value:"").replace(/"/g,'""')}"`); }
+        }
+        csv.push(rowData.join(","));
+    }
+    let blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+    let link = document.createElement("a");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", "Scheme_of_Work.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+<script src="script.js"></script>
+</body>
+</html>

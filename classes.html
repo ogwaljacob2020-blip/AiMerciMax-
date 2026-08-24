@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiMerci Max - Classes & Students</title>
+<link rel="stylesheet" href="style.css">
+<style>
+    .class-pill {
+        display: flex; justify-content: space-between; align-items: center;
+        background: white; border: 1px solid var(--border); border-radius: 10px;
+        padding: 12px; margin-bottom: 8px; cursor: pointer;
+    }
+    .class-pill:active { background: #f5f5f5; }
+    .class-pill .meta { font-size: 12px; color: var(--neutral); }
+    .student-row {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    }
+    .student-row input { margin: 0; }
+    .student-row .rm { background: #ffebee; color: #c62828; border: none; border-radius: 6px; padding: 8px 12px; }
+</style>
+</head>
+<body class="requires-auth">
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Classes & Students</div>
+        <div class="app-subtitle">AiMerci Max</div>
+    </div>
+</div>
+
+<div class="container">
+    <div id="classListSection">
+        <h3>Your Classes</h3>
+        <div id="classListBody"><p style="color:var(--neutral); font-size:13px;">Loading...</p></div>
+        <button class="btn-generate" onclick="startNewClass()" style="margin-top:10px;">+ New Class</button>
+    </div>
+
+    <div id="editSection" style="display:none; margin-top:20px;">
+        <h3 id="editHeading">New Class</h3>
+        <label>Class Name (e.g. "S.3 Blue - Physics")</label>
+        <input id="className" placeholder="S.3 Blue - Physics">
+        <div class="meta-grid">
+            <div><label>Subject</label><input id="classSubject" placeholder="Physics"></div>
+            <div><label>Term</label>
+                <select id="classTerm">
+                    <option>Term I</option><option>Term II</option><option>Term III</option>
+                </select>
+            </div>
+        </div>
+        <input id="classYear" type="number" placeholder="Year (e.g. 2026)">
+
+        <h3 style="margin-top:20px;">Students</h3>
+        <div id="studentRows"></div>
+        <button onclick="addStudentRow()" style="margin-top:8px;">+ Add Student</button>
+
+        <div class="button-group" style="margin-top:20px;">
+            <button class="btn-generate" onclick="saveClass()">💾 Save Class</button>
+            <button onclick="cancelEdit()">Cancel</button>
+        </div>
+        <button id="deleteClassBtn" class="btn-danger" style="display:none; margin-top:10px;" onclick="deleteCurrentClass()">Delete This Class</button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+<script>
+let currentClassId = null; // null = creating new
+
+function studentRowHtml(id, name, admNo) {
+    return `<div class="student-row" data-sid="${id}">
+        <input placeholder="Student name" class="s-name" value="${(name||'').replace(/"/g,'&quot;')}" style="flex:2;">
+        <input placeholder="Adm No. (optional)" class="s-adm" value="${(admNo||'').replace(/"/g,'&quot;')}" style="flex:1;">
+        <button class="rm" onclick="this.closest('.student-row').remove()">✕</button>
+    </div>`;
+}
+
+function addStudentRow(name, admNo) {
+    let wrap = document.getElementById("studentRows");
+    let id = "s" + Date.now() + Math.floor(Math.random()*1000);
+    wrap.insertAdjacentHTML("beforeend", studentRowHtml(id, name, admNo));
+}
+
+function startNewClass() {
+    currentClassId = null;
+    document.getElementById("editHeading").textContent = "New Class";
+    document.getElementById("className").value = "";
+    document.getElementById("classSubject").value = "";
+    document.getElementById("classYear").value = new Date().getFullYear();
+    document.getElementById("studentRows").innerHTML = "";
+    document.getElementById("deleteClassBtn").style.display = "none";
+    document.getElementById("editSection").style.display = "block";
+    document.getElementById("classListSection").style.display = "none";
+    addStudentRow();
+    addStudentRow();
+}
+
+function cancelEdit() {
+    document.getElementById("editSection").style.display = "none";
+    document.getElementById("classListSection").style.display = "block";
+}
+
+async function loadClassList() {
+    let user = auth.currentUser;
+    if (!user) return;
+    let body = document.getElementById("classListBody");
+
+    try {
+        let snap = await db.collection("classes").where("uid", "==", user.uid).get();
+        if (snap.empty) {
+            body.innerHTML = `<p style="color:var(--neutral); font-size:13px;">No classes saved yet. Add one below.</p>`;
+            return;
+        }
+        body.innerHTML = "";
+        snap.forEach(doc => {
+            let d = doc.data();
+            let el = document.createElement("div");
+            el.className = "class-pill";
+            el.onclick = () => openClass(doc.id, d);
+            el.innerHTML = `<div><strong>${d.className || "(unnamed)"}</strong><br>
+                <span class="meta">${(d.students||[]).length} students · ${d.term || ""} ${d.year || ""}</span></div>
+                <span>›</span>`;
+            body.appendChild(el);
+        });
+    } catch (e) {
+        body.innerHTML = `<p style="color:var(--neutral); font-size:13px;">Couldn't load classes (${e.code || e.message}).</p>`;
+    }
+}
+
+function openClass(id, d) {
+    currentClassId = id;
+    document.getElementById("editHeading").textContent = "Edit Class";
+    document.getElementById("className").value = d.className || "";
+    document.getElementById("classSubject").value = d.subject || "";
+    document.getElementById("classTerm").value = d.term || "Term I";
+    document.getElementById("classYear").value = d.year || new Date().getFullYear();
+    document.getElementById("studentRows").innerHTML = "";
+    (d.students || []).forEach(s => addStudentRow(s.name, s.admNo));
+    if ((d.students || []).length === 0) addStudentRow();
+    document.getElementById("deleteClassBtn").style.display = "block";
+    document.getElementById("editSection").style.display = "block";
+    document.getElementById("classListSection").style.display = "none";
+}
+
+async function saveClass() {
+    let user = auth.currentUser;
+    if (!user) return;
+
+    let className = document.getElementById("className").value.trim();
+    if (!className) { alert("Enter a class name first"); return; }
+
+    let students = [];
+    document.querySelectorAll("#studentRows .student-row").forEach(row => {
+        let name = row.querySelector(".s-name").value.trim();
+        let admNo = row.querySelector(".s-adm").value.trim();
+        if (name) students.push({ id: row.dataset.sid, name, admNo });
+    });
+    if (students.length === 0) { alert("Add at least one student"); return; }
+
+    let payload = {
+        uid: user.uid,
+        className,
+        subject: document.getElementById("classSubject").value.trim(),
+        term: document.getElementById("classTerm").value,
+        year: document.getElementById("classYear").value,
+        students,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        if (currentClassId) {
+            await db.collection("classes").doc(currentClassId).update(payload);
+        } else {
+            await db.collection("classes").add(payload);
+        }
+        cancelEdit();
+        loadClassList();
+    } catch (e) {
+        alert("Couldn't save class (error: " + (e.code || e.message) + ")");
+    }
+}
+
+async function deleteCurrentClass() {
+    if (!currentClassId) return;
+    if (!confirm("Delete this class and its student list? Saved marks for it will remain but won't show student names correctly.")) return;
+    try {
+        await db.collection("classes").doc(currentClassId).delete();
+        cancelEdit();
+        loadClassList();
+    } catch (e) {
+        alert("Couldn't delete class (error: " + (e.code || e.message) + ")");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) loadClassList();
+    });
+});
+</script>
+</body>
+</html>

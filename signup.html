@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMerci Max - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .signup-wrap { display:flex; justify-content:center; align-items:center; min-height:calc(100vh - 60px); padding:20px; }
+        .signup-box { background:white; width:100%; max-width:400px; padding:30px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.2); text-align:center; }
+        .signup-box h1 { color:var(--primary); }
+        .signup-box input { width:90%; padding:12px; margin:10px 0; border:1px solid var(--border); border-radius:8px; display:block; margin-left:auto; margin-right:auto; }
+        .signup-box p { margin-top:15px; }
+        .signup-box a { color:var(--primary); }
+        #signupError { color:var(--danger); font-size:13px; min-height:18px; }
+    </style>
+</head>
+<body>
+<div class="app-header">
+    <a href="index.html">←</a>
+    <div>
+        <div class="app-title">AiMerci Max</div>
+        <div class="app-subtitle">Create Account</div>
+    </div>
+</div>
+<div class="signup-wrap">
+<div class="signup-box">
+    <h1>AiMerci Max</h1>
+    <h2>Create Account</h2>
+    <input id="fullName" type="text" placeholder="Full Name">
+    <input id="email" type="email" placeholder="Email Address">
+    <input id="phone" type="tel" placeholder="Phone Number">
+    <input id="password" type="password" placeholder="Create Password (6+ characters)">
+    <div id="signupError"></div>
+    <button onclick="createAccount()">Create Account</button>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+function createAccount() {
+    let name = document.getElementById("fullName").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let phone = document.getElementById("phone").value.trim();
+    let password = document.getElementById("password").value;
+    let error = document.getElementById("signupError");
+    error.textContent = "";
+    if (!name || !email || !password) { error.textContent = "Please fill in your name, email, and password."; return; }
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((cred) => db.collection("users").doc(cred.user.uid).set({ name, email, phone, createdAt: firebase.firestore.FieldValue.serverTimestamp() }))
+        .then(() => { window.location.href = "dashboard.html"; })
+        .catch((err) => {
+            if (err.code === "auth/email-already-in-use") error.textContent = "An account with this email already exists.";
+            else if (err.code === "auth/weak-password") error.textContent = "Password should be at least 6 characters.";
+            else if (err.code === "auth/invalid-email") error.textContent = "Please enter a valid email address.";
+            else error.textContent = err.message;
+        });
+}
+</script>
+</body>
+</html>

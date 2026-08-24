@@ -4,104 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AiMerci Max Dashboard</title>
-
+    <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f6ff;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .header {
-            background: #1565c0;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 15px;
-        }
-
-        .container {
-            margin-top: 20px;
-            display: grid;
-            gap: 15px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-            text-align: center;
-            font-size: 18px;
-        }
-
-        .card button {
-            background: #1565c0;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-top: 10px;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        .card button:disabled {
-            background: #b0bec5;
-            cursor: not-allowed;
-        }
-
-        .card small {
-            display: block;
-            margin-top: 6px;
-            color: #888;
-            font-size: 12px;
-        }
+        .cards { display:grid; gap:15px; padding:15px; max-width:700px; margin:0 auto; }
     </style>
 </head>
-
-<body>
-
-<div class="header">
-    <h1>AiMerci Max</h1>
-    <p id="greeting">Teacher AI Assistant</p>
+<body class="requires-auth">
+<div class="app-header">
+    <div>
+        <div class="app-title">AiMerci Max</div>
+        <div class="app-subtitle" id="greeting">Loading...</div>
+    </div>
 </div>
-
-<div class="container">
-
-    <div class="card">
-        📘 Scheme of Work Generator
+<div class="cards">
+    <div class="card">📘 Scheme of Work Generator<br><button onclick="location.href='scheme.html'">Open</button></div>
+    <div class="card">📝 Lesson Plan Creator<br><button onclick="location.href='lessonplan.html'">Open</button></div>
+    <div class="card">📚 Notes Generator<br><button onclick="location.href='notes.html'">Open</button></div>
+    <div class="card">📋 Assessment Generator<br><button onclick="location.href='assessment.html'">Open</button></div>
+    <div class="card">🧑‍🎓 Classes & Students<br><button onclick="location.href='classes.html'">Open</button></div>
+    <div class="card">✏️ Enter Marks<br><button onclick="location.href='marks.html'">Open</button></div>
+    <div class="card">🏆 Report Cards<br><button onclick="location.href='reportcard.html'">Open</button></div>
+        <div class="card" id="subStatusCard">
+        💎 <span id="subStatusText">Checking subscription...</span>
         <br>
-        <button onclick="location.href='scheme.html'">Open</button>
+        <button onclick="location.href='subscribe.html'">Manage Subscription</button>
     </div>
-
-    <div class="card">
-        📝 Lesson Plan Creator
-        <br>
-        <button onclick="location.href='lessonplan.html'">Open</button>
+    <div id="adminLink" style="display:none; text-align:center; margin-top:-5px;">
+        <a href="admin.html" style="font-size:13px; color:#888;">⚙️ Admin: Payment Approvals</a>
     </div>
-
-    <div class="card">
-        📚 Notes Generator
-        <br>
-        <button onclick="location.href='notes.html'">Open</button>
-    </div>
-
-    <div class="card">
-        📋 Assessment Generator
-        <br>
-        <button onclick="location.href='assessment.html'">Open</button>
-    </div>
-
+    <button class="btn-danger" onclick="logout()">Log Out</button>
 </div>
-
 <script>
-let account = JSON.parse(localStorage.getItem("aimerciAccount") || "null");
-if (account && account.name) {
-    document.getElementById("greeting").textContent = "Welcome back, " + account.name;
-}
+document.addEventListener("DOMContentLoaded", function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user && user.email === "ogwaljacob2020@gmail.com") {
+            document.getElementById("adminLink").style.display = "block";
+        }
+    });
+});
 </script>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

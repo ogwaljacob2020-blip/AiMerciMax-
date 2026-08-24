@@ -1,0 +1,384 @@
+/* ============================================
+   AiMerci Max - Shared Design System
+   ============================================ */
+
+:root {
+    --primary: #1565c0;
+    --primary-dark: #0d47a1;
+    --accent: #6a1b9a;
+    --success: #4caf50;
+    --warning: #e65100;
+    --danger: #d32f2f;
+    --neutral: #555;
+    --bg: #f2f6ff;
+    --card-bg: #ffffff;
+    --border: #ccc;
+    --text: #333;
+    --radius: 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* ---------- App Header (used on every internal page) ---------- */
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--primary-dark);
+    color: white;
+    padding: 14px 6%;
+}
+
+.app-header a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.app-header .app-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.app-header .app-subtitle {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+/* ---------- Public nav (index.html only) ---------- */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary-dark);
+    padding: 15px 8%;
+}
+
+.logo {
+    color: #fff;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 25px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+nav ul li a:hover {
+    color: #ffd54f;
+}
+
+.btn {
+    background: #ffd54f;
+    color: var(--primary-dark);
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background: white;
+}
+
+/* ---------- Hero Section ---------- */
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    color: var(--primary-dark);
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 20px;
+    max-width: 700px;
+    margin: auto;
+    line-height: 1.7;
+}
+
+.hero-btn {
+    display: inline-block;
+    margin-top: 35px;
+    background: var(--primary-dark);
+    color: white;
+    padding: 15px 35px;
+    text-decoration: none;
+    border-radius: 40px;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.hero-btn:hover {
+    background: var(--primary);
+}
+
+/* ---------- Shared App Container (generator pages) ---------- */
+.container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    max-width: 1000px;
+    margin: 15px auto;
+    overflow-x: auto;
+}
+
+.container h1, .container h2 {
+    text-align: center;
+    color: var(--primary);
+    margin: 5px 0;
+}
+
+h3 {
+    color: var(--primary-dark);
+    margin: 15px 0 8px;
+}
+
+/* ---------- Forms ---------- */
+input, select, textarea {
+    font-family: inherit;
+}
+
+.container input[type="text"],
+.container input[type="number"],
+.container input[type="tel"],
+.container input[type="email"],
+.container input[type="password"],
+.container select,
+.container textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.meta-grid label {
+    display: block;
+    font-size: 13px;
+    color: var(--neutral);
+    margin-bottom: 3px;
+}
+
+/* Any other <label> in the app — not just inside .meta-grid — should
+   always stack above its field, never wrap beside it. */
+.container label {
+    display: block;
+    font-size: 13px;
+    color: var(--neutral);
+    margin: 10px 0 3px;
+}
+
+.meta-grid input, .meta-grid select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+/* ---------- Buttons ---------- */
+.container button, .btn-block {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    width: 100%;
+    margin-top: 10px;
+    color: white;
+    background: var(--primary);
+}
+
+.btn-generate { background: var(--accent); }
+.btn-secondary { background: var(--success); }
+.btn-print { background: var(--neutral); }
+.btn-danger { background: var(--danger); }
+.btn-warning { background: var(--warning); }
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.button-group button, .button-group .btn-block {
+    flex: 1;
+    margin-top: 0;
+}
+
+.card button:disabled {
+    background: #7a7a7a !important;
+    color: white !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.container button:disabled, .btn-block:disabled, button:disabled {
+    background: #7a7a7a !important;
+    color: white !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/* ---------- Tables ---------- */
+table {
+    width: 100%;
+    min-width: 650px;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: auto;
+}
+
+th, td {
+    border: 1px solid #bbb;
+    padding: 6px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: #e3f2fd;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--primary-dark);
+}
+
+/* Sensible starting widths for the scheme-of-work table — auto layout
+   still lets any column grow wider if a teacher types more into it. */
+#schemeTable th:nth-child(1), #schemeTable td:nth-child(1) { width: 50px; }  /* Week */
+#schemeTable th:nth-child(2), #schemeTable td:nth-child(2) { width: 55px; }  /* Period */
+#schemeTable th:nth-child(3), #schemeTable td:nth-child(3) { width: 16%; }   /* Theme/Topic */
+#schemeTable th:nth-child(4), #schemeTable td:nth-child(4) { width: 16%; }   /* Competency */
+#schemeTable th:nth-child(5), #schemeTable td:nth-child(5) { width: 18%; }   /* Learning Outcomes */
+#schemeTable th:nth-child(6), #schemeTable td:nth-child(6) { width: 14%; }   /* T/L Resources */
+#schemeTable th:nth-child(7), #schemeTable td:nth-child(7) { width: 16%; }   /* Methodology */
+#schemeTable th:nth-child(8), #schemeTable td:nth-child(8) { width: 60px; }  /* Ref. */
+#schemeTable th:nth-child(9), #schemeTable td:nth-child(9) { width: 12%; }   /* Remarks */
+
+#assessmentTable th:nth-child(1), #assessmentTable td:nth-child(1) { width: 50px; }  /* No. */
+#assessmentTable th:nth-child(3), #assessmentTable td:nth-child(3) { width: 70px; }  /* Marks */
+
+td textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: none;
+    overflow-y: hidden;
+    font-family: inherit;
+    font-size: 13px;
+    min-height: 32px;
+    line-height: 1.4;
+}
+
+/* ---------- Dashboard cards ---------- */
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    text-align: center;
+    font-size: 18px;
+}
+
+.card small {
+    display: block;
+    margin-top: 6px;
+    color: #888;
+    font-size: 12px;
+}
+
+/* ---------- Status line ---------- */
+.save-status {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 12px;
+}
+
+/* ---------- PDF export (mirrors print rules, used by html2pdf) ---------- */
+body.pdf-export .app-header,
+body.pdf-export .no-print,
+body.pdf-export .save-status,
+body.pdf-export .button-group {
+    display: none !important;
+}
+
+body.pdf-export .container {
+    overflow-x: visible !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+body.pdf-export table {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+}
+
+body.pdf-export td, body.pdf-export th {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    font-size: 11px !important;
+}
+
+body.pdf-export td textarea {
+    border: none !important;
+    padding: 2px !important;
+    height: auto !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    font-size: 11px !important;
+}
+
+/* ---------- Print ---------- */
+@media print {
+    body { background: white; padding: 0; }
+    .app-header, .no-print, .save-status, .button-group { display: none !important; }
+    .container { box-shadow: none; padding: 0; max-width: 100%; overflow-x: visible; }
+    table { min-width: 0; }
+    input, select { border: none; background: transparent; padding: 0; margin: 0; }
+    th { background: #f0f0f0 !important; color: black; }
+    td textarea { border: none; padding: 0; height: auto !important; }
+}

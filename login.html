@@ -6,37 +6,16 @@
     <title>AiMerci Max - Login</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .signup-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 60px);
-            padding: 20px;
-        }
-        .signup-box {
-            background: white;
-            width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        .signup-box h1 { color: var(--primary); }
-        .signup-box input {
-            width: 90%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-        .signup-box p { margin-top: 15px; }
-        .signup-box a { color: var(--primary); }
-        #loginError { color: var(--danger); font-size: 13px; min-height: 18px; }
+        .signup-wrap { display:flex; justify-content:center; align-items:center; min-height:calc(100vh - 60px); padding:20px; }
+        .signup-box { background:white; width:100%; max-width:400px; padding:30px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.2); text-align:center; }
+        .signup-box h1 { color:var(--primary); }
+        .signup-box input { width:90%; padding:12px; margin:10px 0; border:1px solid var(--border); border-radius:8px; display:block; margin-left:auto; margin-right:auto; }
+        .signup-box p { margin-top:15px; }
+        .signup-box a { color:var(--primary); }
+        #loginError { font-size:13px; min-height:18px; }
     </style>
 </head>
 <body>
-
 <div class="app-header">
     <a href="index.html">←</a>
     <div>
@@ -44,23 +23,18 @@
         <div class="app-subtitle">Login</div>
     </div>
 </div>
-
 <div class="signup-wrap">
 <div class="signup-box">
     <h1>AiMerci Max</h1>
     <h2>Welcome Back</h2>
-
     <input id="loginEmail" type="email" placeholder="Email Address">
     <input id="loginPassword" type="password" placeholder="Password">
-
     <div id="loginError"></div>
-
     <button onclick="doLogin()">Login</button>
-
+    <p><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
     <p>Don't have an account? <a href="signup.html">Sign up</a></p>
 </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -70,21 +44,36 @@ function doLogin() {
     let email = document.getElementById("loginEmail").value.trim();
     let password = document.getElementById("loginPassword").value;
     let error = document.getElementById("loginError");
+    error.style.color = "#d32f2f";
     error.textContent = "";
-
-    if (!email || !password) {
-        error.textContent = "Enter your email and password.";
-        return;
-    }
-
+    if (!email || !password) { error.textContent = "Enter your email and password."; return; }
     auth.signInWithEmailAndPassword(email, password)
         .then(() => { window.location.href = "dashboard.html"; })
         .catch((err) => {
-            if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
-                error.textContent = "Incorrect email or password.";
-            } else {
-                error.textContent = err.message;
-            }
+            if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found")
+                error.textContent = "Incorrect email or password. Use Forgot Password if needed.";
+            else error.textContent = err.message;
+        });
+}
+
+function resetPassword() {
+    let email = document.getElementById("loginEmail").value.trim();
+    let error = document.getElementById("loginError");
+    if (!email) {
+        error.style.color = "#e65100";
+        error.textContent = "Enter your email address above first, then tap Forgot Password.";
+        return;
+    }
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            error.style.color = "#4caf50";
+            error.textContent = "Password reset email sent to " + email + ". Check your inbox.";
+        })
+        .catch((err) => {
+            error.style.color = "#d32f2f";
+            if (err.code === "auth/user-not-found")
+                error.textContent = "No account found with that email address.";
+            else error.textContent = err.message;
         });
 }
 </script>

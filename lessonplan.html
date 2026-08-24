@@ -5,34 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AiMerci Max - Lesson Plan Generator</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .meta-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        .meta-grid input, .meta-grid select {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; color: black; }
-            .container { width: 100%; max-width: 100%; padding: 0; box-shadow: none; }
-        }
-    </style>
 </head>
-<body>
+<body class="requires-auth">
+
+<div class="app-header">
+    <a href="dashboard.html">←</a>
+    <div>
+        <div class="app-title">Lesson Plan</div>
+        <div class="app-subtitle">AiMerci Max Studio</div>
+    </div>
+</div>
 
 <div class="container">
-    <h1>LESSON PLAN TEMPLATE</h1>
-    <h2>AiMerci Max Studio</h2>
 
-    <div id="saveStatus">No draft saved yet</div>
+    <div class="save-status" id="saveStatus">No draft saved yet</div>
 
     <h3>1. Context & Tracking Properties</h3>
     <div class="meta-grid">
@@ -65,66 +51,70 @@
     <h3>2. Curricular Bounds & Targets</h3>
     <div style="margin-bottom: 20px;">
         <label>Lesson Topic / Focus Sub-Topic</label>
-        <input id="lessonTopic" type="text" placeholder="Specify core theme focus" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc;" oninput="saveDraft()">
+        <input id="lessonTopic" type="text" placeholder="Specify core theme focus" oninput="saveDraft()">
 
         <label>Core Lesson Competency</label>
-        <textarea id="lessonCompetency" placeholder="Describe the overarching skills or concepts from the scheme of work" style="width:100%; min-height:60px; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc;" oninput="autoExpand(this); saveDraft();"></textarea>
+        <textarea id="lessonCompetency" placeholder="Describe the overarching skills or concepts from the scheme of work" oninput="autoExpand(this); saveDraft();"></textarea>
 
         <label>Expected Learning Outcomes</label>
-        <textarea id="lessonOutcomes" placeholder="What should the active learners achieve by the end of the lesson block?" style="width:100%; min-height:60px; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc;" oninput="autoExpand(this); saveDraft();"></textarea>
+        <textarea id="lessonOutcomes" placeholder="What should the active learners achieve by the end of the lesson block?" oninput="autoExpand(this); saveDraft();"></textarea>
 
         <label>Instructional Aids & Low-Cost Materials</label>
-        <input id="lessonResources" type="text" placeholder="Local materials, flip charts, print text references" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" oninput="saveDraft()">
+        <input id="lessonResources" type="text" placeholder="Local materials, flip charts, print text references" oninput="saveDraft()">
     </div>
 
-    <button id="aiPlanBtn" class="no-print" style="background: #2962ff; color: white; border: none; width: 100%; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 25px;" onclick="generateFullLessonAI()">
-        ✨ Generate Full Plan (AiMerci)
-    </button>
+    <button class="btn-generate no-print" onclick="generateFullLessonAI()">✨ Generate Full Plan (AiMerci)</button>
 
     <h3>3. Sequential Step Development Grid</h3>
-    <table id="lessonTable" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+    <table id="lessonTable">
         <thead>
-            <tr style="background: #f1f3f4;">
-                <th style="border: 1px solid #ccc; padding: 10px; text-align: left; width: 15%;">Stage / Pacing</th>
-                <th style="border: 1px solid #ccc; padding: 10px; text-align: left; width: 42.5%;">Teacher Activity Protocol</th>
-                <th style="border: 1px solid #ccc; padding: 10px; text-align: left; width: 42.5%;">Learner Activity Tasks</th>
+            <tr>
+                <th style="width: 15%;">Stage / Pacing</th>
+                <th style="width: 42.5%;">Teacher Activity Protocol</th>
+                <th style="width: 42.5%;">Learner Activity Tasks</th>
             </tr>
         </thead>
         <tbody id="lessonBody">
             <tr>
-                <td style="border: 1px solid #ccc; padding: 10px; background: #fafafa;"><strong>Intro Hook</strong><br><small>(10 Mins)</small></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="stepIntroTeacher" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="stepIntroLearner" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><strong>Intro Hook</strong><br><small>(10 Mins)</small></td>
+                <td><textarea id="stepIntroTeacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="stepIntroLearner" oninput="autoExpand(this); saveDraft();"></textarea></td>
             </tr>
             <tr>
-                <td style="border: 1px solid #ccc; padding: 10px; background: #fafafa;"><strong>Step 1</strong><br><small>(20 Mins)</small></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="step1Teacher" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="step1Learner" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><strong>Step 1</strong><br><small>(20 Mins)</small></td>
+                <td><textarea id="step1Teacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="step1Learner" oninput="autoExpand(this); saveDraft();"></textarea></td>
             </tr>
             <tr>
-                <td style="border: 1px solid #ccc; padding: 10px; background: #fafafa;"><strong>Step 2 (Groups)</strong><br><small>(25 Mins)</small></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="step2Teacher" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="step2Learner" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><strong>Step 2 (Groups)</strong><br><small>(25 Mins)</small></td>
+                <td><textarea id="step2Teacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="step2Learner" oninput="autoExpand(this); saveDraft();"></textarea></td>
             </tr>
             <tr>
-                <td style="border: 1px solid #ccc; padding: 10px; background: #fafafa;"><strong>Step 3 Review</strong><br><small>(15 Mins)</small></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="step3Teacher" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="step3Learner" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><strong>Step 3 Review</strong><br><small>(15 Mins)</small></td>
+                <td><textarea id="step3Teacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="step3Learner" oninput="autoExpand(this); saveDraft();"></textarea></td>
             </tr>
             <tr>
-                <td style="border: 1px solid #ccc; padding: 10px; background: #fafafa;"><strong>Conclusion</strong><br><small>(10 Mins)</small></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="stepConcTeacher" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
-                <td style="border: 1px solid #ccc; padding: 5px;"><textarea id="stepConcLearner" style="width:100%; border:none; resize:none;" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><strong>Conclusion</strong><br><small>(10 Mins)</small></td>
+                <td><textarea id="stepConcTeacher" oninput="autoExpand(this); saveDraft();"></textarea></td>
+                <td><textarea id="stepConcLearner" oninput="autoExpand(this); saveDraft();"></textarea></td>
             </tr>
         </tbody>
     </table>
 
-    <div class="button-group no-print" style="display: flex; gap: 10px;">
-        <button style="flex: 1; padding: 12px; background: #555; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="window.print()">🖨️ Print Formatted Plan</button>
-        <button style="flex: 1; padding: 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="clearLessonPlan()">🗑️ Clear/Reset Board</button>
+    <div class="button-group no-print">
+        <button class="btn-warning" onclick="downloadPDF('Lesson_Plan.pdf')">📄 PDF</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+        <button class="btn-danger" onclick="clearLessonPlan()">🗑️ Clear</button>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

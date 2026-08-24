@@ -1,0 +1,76 @@
+rules_version = '2';
+
+// Paste this into: Firebase Console → Firestore Database → Rules → Publish
+// Replace your existing rules with this file (or merge if you've added
+// other collections since).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == "ogwaljacob2020@gmail.com";
+    }
+
+    // ---- users ----
+    // Each teacher can read/create their own profile.
+    // Only the admin can flip `subscribed` / `subExpiry` — a teacher
+    // editing their own doc cannot self-activate Pro.
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isAdmin()
+        || (isSignedIn() && request.auth.uid == uid
+            && request.resource.data.subscribed == resource.data.subscribed
+            && request.resource.data.subExpiry == resource.data.subExpiry);
+    }
+
+    // ---- documents (saved scheme/lesson/notes/assessment drafts) ----
+    match /documents/{docId} {
+      allow read, write: if isSignedIn() && request.resource.data.uid == request.auth.uid
+        || (isSignedIn() && resource != null && resource.data.uid == request.auth.uid);
+    }
+
+    // ---- pendingPayments ----
+    // A teacher can create their own claim and read only their own claims.
+    // Only the admin can read the full list or update status (approve/reject).
+    match /pendingPayments/{claimId} {
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.status == "pending";
+      allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---- usedTxIds ----
+    // Document ID = the mobile money transaction ID itself. Firestore treats
+    // a write to an ID that doesn't exist yet as "create" and a write to one
+    // that already exists as "update" — since only admin can update/delete,
+    // a transaction ID can only ever be claimed once. This stops the same
+    // proof-of-payment being reused to activate multiple accounts.
+    match /usedTxIds/{txId} {
+      allow create: if isSignedIn();
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- classes ----
+    // A teacher's saved class + student roster. Strictly owner-only — no
+    // teacher can ever see another teacher's students.
+    match /classes/{classId} {
+      allow read, update, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+    }
+
+    // ---- marks ----
+    // One document per assessment (e.g. "BOT Exam") for a class, holding
+    // every student's score. Owner-only, same as classes.
+    match /marks/{markId} {
+      allow read, update, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+    }
+  }
+}
